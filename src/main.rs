@@ -2,6 +2,19 @@ extern crate piston_window;
 
 use piston_window::*;
 
+struct Ball {
+    position: [i32; 2],
+    dir: f32
+}
+
+struct Paddle {
+    position: [i32; 2]
+}
+
+struct Game {
+    score: [i32; 2],
+    player: Paddle
+}
 
 fn main() {
     let mut window: PistonWindow = WindowSettings::new(
@@ -22,4 +35,25 @@ fn main() {
     }
 
     println!("Hello, world!");
+}
+
+impl Ball {
+    fn render(&mut self) {
+    }
+}
+
+impl Paddle {
+    fn render(&mut self) {
+    }
+}
+
+impl Game {
+    fn reset(&mut self) {
+    }
+
+    fn update(&mut self) {
+    }
+
+    fn render(&mut self) {
+    }
 }
