@@ -1,0 +1,6 @@
+[package]
+name = "pong-rs"
+version = "0.1.0"
+authors = ["Ganesha Danu Enastika <ganeshadanu1@gmail.com>"]
+
+[dependencies]
