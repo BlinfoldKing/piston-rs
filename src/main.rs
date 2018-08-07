@@ -55,7 +55,7 @@ fn main() {
         }
 
         if let Some(b) = event.button_args() {
-            println!("button pressed");
+            game.pressed(&b.button); 
         }
    }
 
@@ -81,19 +81,29 @@ impl Game {
 
     fn render(&mut self, arg: &RenderArgs) {
         use graphics;
-        let bg = [0.1; 4];
+        let bg = [0.01; 4];
        
         let player_graphics = graphics::rectangle::square(
             self.player.position[0] as f64,
             self.player.position[1] as f64,
-            100.0
+            20.0
         );
         
         self.gl.draw(arg.viewport(), |_c, gl| {
             graphics::clear(bg, gl);
             graphics::rectangle([1.0; 4], player_graphics, _c.transform, gl);
         });
-
         
+    }
+
+    fn pressed(&mut self, button: &Button) {
+        if button == &Button::Keyboard(Key::W) {
+            self.player.position[1] -= 10;
+        }
+        if button == &Button::Keyboard(Key::S) {
+            self.player.position[1] += 10;
+        }
+
+        println!("{:?}", self.player.position);
     }
 }
