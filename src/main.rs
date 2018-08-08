@@ -11,11 +11,13 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 
 struct Ball {
     position: [i32; 2],
-    dir: f32
+    dir: [f64; 2],
+    gl: GlGraphics
 }
 
 struct Paddle {
-    position: [i32; 2]
+    position: [i32; 2],
+    gl: GlGraphics
 }
 
 struct Game {
@@ -23,6 +25,7 @@ struct Game {
     player: Paddle,
     enemy: Paddle,
     enemy_dir: bool,
+    ball: Ball,
     gl: GlGraphics
 }
 
@@ -41,12 +44,19 @@ fn main() {
     let mut game = Game {
         score: [0, 0],
         player: Paddle {
-            position: [40, 0]
+            position: [40, 220],
+            gl: GlGraphics::new(opengl)
         },
         enemy: Paddle {
-            position: [440, 0]
+            position: [440, 0],
+            gl: GlGraphics::new(opengl)
         },
         enemy_dir: true,
+        ball: Ball {
+            position: [250; 2],
+            dir: [-1.0, 0.0],
+            gl: GlGraphics::new(opengl)
+        },
         gl: GlGraphics::new(opengl)
     };
 
@@ -70,12 +80,36 @@ fn main() {
 }
 
 impl Ball {
-    fn render(&mut self) {
+    fn render(&mut self, arg: &RenderArgs) {
+        let ball_graphics = graphics::rectangle::square(
+            self.position[0] as f64,
+            self.position[1] as f64,
+            20.0
+        );
+
+        self.gl.draw(arg.viewport(), |_c, gl| {
+           graphics::rectangle([1.0; 4], ball_graphics, _c.transform, gl);
+        });
     }
+
+    fn update(&mut self) {
+        self.position[0] += (self.dir[0] * 5.0) as i32;
+        self.position[1] += (self.dir[1] * 5.0) as i32;
+    } 
 }
 
 impl Paddle {
-    fn render(&mut self) {
+    fn render(&mut self, arg: &RenderArgs) {
+        let paddle_graphics = graphics::rectangle::rectangle_by_corners(
+            self.position[0] as f64,
+            self.position[1] as f64,
+            (self.position[0] + 20) as f64,
+            (self.position[1] + 100) as f64
+        );
+        
+        self.gl.draw(arg.viewport(), |_c, gl| {
+            graphics::rectangle([1.0; 4], paddle_graphics, _c.transform, gl);
+        });
     }
 
     fn moveDown(&mut self, speed: f32) {
@@ -107,32 +141,47 @@ impl Game {
                 self.enemy_dir = !self.enemy_dir;
             }
         }
+        
+        if (self.ball.position[0] + 20 >= self.enemy.position[0])
+            && (self.ball.position[0] + 20 <= self.enemy.position[0] + 20)
+            && (self.ball.position[1] >= self.enemy.position[1])
+            && (self.ball.position[1] + 20 <= self.enemy.position[1] + 100) {
+                let y =  (((self.ball.position[1] + 10) - (self.player.position[1] + 50)) as f64 / 50.0);
+                self.ball.dir[0] = -1.0;
+                self.ball.dir[1] = y;
+        }
+        
+        if (self.ball.position[0] <= self.player.position[0] + 20)
+            && (self.ball.position[0] >= self.player.position[0])
+            && (self.ball.position[1] >= self.player.position[1])
+            && (self.ball.position[1] + 20 <= self.player.position[1] + 100) {
+                let y =  (((self.ball.position[1] + 10) - (self.player.position[1] + 50)) as f64 / 50.0);
+                self.ball.dir[0] = 1.0;
+                self.ball.dir[1] = y; 
+        }
+
+        if (self.ball.position[1] <= 0) {
+            self.ball.dir[1] *= -1.0;
+        }
+
+        if (self.ball.position[1] >= 400) {
+            self.ball.dir[1] *= -1.0;
+        }
+
+        self.ball.update();
     }
 
     fn render(&mut self, arg: &RenderArgs) {
         use graphics;
         let bg = [0.01; 4];
-       
-        let player_graphics = graphics::rectangle::rectangle_by_corners(
-            self.player.position[0] as f64,
-            self.player.position[1] as f64,
-            (self.player.position[0] + 20) as f64,
-            (self.player.position[1] + 100) as f64
-        );
-
-        let enemy_graphics = graphics::rectangle::rectangle_by_corners(
-            self.enemy.position[0] as f64,
-            self.enemy.position[1] as f64,
-            (self.enemy.position[0] + 20) as f64,
-            (self.enemy.position[1] + 100) as f64
-        );
 
         self.gl.draw(arg.viewport(), |_c, gl| {
             graphics::clear(bg, gl);
-            graphics::rectangle([1.0; 4], player_graphics, _c.transform, gl);
-            graphics::rectangle([1.0; 4], enemy_graphics, _c.transform, gl);
         });
-        
+
+        self.player.render(&arg);
+        self.enemy.render(&arg);
+        self.ball.render(&arg); 
     }
 
     fn pressed(&mut self, button: &Button) {
