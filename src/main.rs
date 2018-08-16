@@ -146,7 +146,7 @@ impl Game {
             && (self.ball.position[0] + 20 <= self.enemy.position[0] + 20)
             && (self.ball.position[1] >= self.enemy.position[1])
             && (self.ball.position[1] + 20 <= self.enemy.position[1] + 100) {
-                let y =  (((self.ball.position[1] + 10) - (self.player.position[1] + 50)) as f64 / 50.0);
+                let y = ((self.ball.position[1] + 10) - (self.player.position[1] + 50)) as f64 / 50.0;
                 self.ball.dir[0] = -1.0;
                 self.ball.dir[1] = y;
         }
@@ -155,18 +155,30 @@ impl Game {
             && (self.ball.position[0] >= self.player.position[0])
             && (self.ball.position[1] >= self.player.position[1])
             && (self.ball.position[1] + 20 <= self.player.position[1] + 100) {
-                let y =  (((self.ball.position[1] + 10) - (self.player.position[1] + 50)) as f64 / 50.0);
+                let y = ((self.ball.position[1] + 10) - (self.player.position[1] + 50)) as f64 / 50.0;
                 self.ball.dir[0] = 1.0;
                 self.ball.dir[1] = y; 
         }
 
-        if (self.ball.position[1] <= 0) {
+        if self.ball.position[1] <= 0 {
             self.ball.dir[1] *= -1.0;
         }
 
-        if (self.ball.position[1] >= 400) {
+        if self.ball.position[1] >= 500 {
             self.ball.dir[1] *= -1.0;
         }
+    
+        if self.ball.position[0] <= 0 {
+            self.ball.dir[0] *= -1.0;
+            self.score[1] += 1;
+        }
+
+        if self.ball.position[0] >= 500 {
+            self.ball.dir[0] *= -1.0;
+            self.score[0] += 1;
+        }
+
+        println!("{:?}", self.score);
 
         self.ball.update();
     }
